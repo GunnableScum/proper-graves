@@ -1,12 +1,13 @@
 {
-	"required": true,
-	"package": "live.gunnablescum.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ArmorStandEntityMixin",
-		"PlayerEntityMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "live.gunnablescum.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ArmorStandEntityMixin",
+    "GraveGlowPacketMixin",
+    "PlayerEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

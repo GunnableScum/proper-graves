@@ -1,5 +1,6 @@
 package live.gunnablescum;
 
+import live.gunnablescum.configuration.enums.GlowingMode;
 import live.gunnablescum.listener.RightClickEntityListener;
 import net.fabricmc.api.ModInitializer;
 
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class ProperGraves implements ModInitializer {
 	public static final String MOD_ID = "proper-graves";
+	public static final GlowingMode GLOWING_MODE = GlowingMode.OWNER_ONLY;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -16,3 +18,4 @@ public class ProperGraves implements ModInitializer {
 		RightClickEntityListener.registerRightClickEvent();
 	}
 }
+

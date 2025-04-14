@@ -2,6 +2,7 @@ package live.gunnablescum.mixin;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import live.gunnablescum.configuration.enums.GlowingMode;
 import live.gunnablescum.data.GraveData;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
 import net.minecraft.component.ComponentChanges;
@@ -29,8 +30,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Base64;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import static live.gunnablescum.ProperGraves.GLOWING_MODE;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
@@ -55,7 +59,10 @@ public class PlayerEntityMixin {
 
         ArmorStandEntity armorStand = new ArmorStandEntity(world, player.getX(), y, player.getZ());
 
-        armorStand.setGlowing(true);
+        // Feature-Implementation for issue #1
+        armorStand.setGlowing(Objects.requireNonNull(GLOWING_MODE) == GlowingMode.ENABLED);
+
+
         armorStand.setNoGravity(true);
         armorStand.setShowArms(true);
         armorStand.setInvisible(true);
