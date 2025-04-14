@@ -1,3 +1,4 @@
 accessWidener v2 named
 accessible method net/minecraft/entity/player/PlayerEntity dropInventory (Lnet/minecraft/server/world/ServerWorld;)V
 accessible field net/minecraft/entity/LivingEntity equipment Lnet/minecraft/entity/EntityEquipment;
+accessible field net/minecraft/entity/Entity FLAGS Lnet/minecraft/entity/data/TrackedData;
