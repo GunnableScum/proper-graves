@@ -2,7 +2,6 @@ package live.gunnablescum.mixin;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import live.gunnablescum.configuration.enums.GlowingMode;
 import live.gunnablescum.data.GraveData;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
 import net.minecraft.component.ComponentChanges;
@@ -12,6 +11,7 @@ import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -30,11 +30,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Base64;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
-import static live.gunnablescum.ProperGraves.GLOWING_MODE;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
@@ -50,7 +47,11 @@ public class PlayerEntityMixin {
         // No need to do anything if keepInventory is enabled.
         if(world.getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) return;
 
-        // TODO: Implement a check for if the player inventory is empty, but for v1.0 it's not really that critical.
+        NbtCompound playerData = new NbtCompound();
+        player.writeCustomDataToNbt(playerData);
+
+        PlayerInventory inventory = player.getInventory();
+        if(inventory.isEmpty() && playerData.getCompound("equipment").isEmpty()) return;
 
         double y = player.getY();
         boolean isExtendedHeightLimit = !world.isOutOfHeightLimit(-64);
@@ -59,8 +60,8 @@ public class PlayerEntityMixin {
 
         ArmorStandEntity armorStand = new ArmorStandEntity(world, player.getX(), y, player.getZ());
 
-        // Feature-Implementation for issue #1
-        armorStand.setGlowing(Objects.requireNonNull(GLOWING_MODE) == GlowingMode.ENABLED);
+        // Feature-Implementation for issue #1, Check GraveGlowPacketMixin.java.
+        armorStand.setGlowing(false);
 
 
         armorStand.setNoGravity(true);
@@ -90,8 +91,6 @@ public class PlayerEntityMixin {
         GraveData.setOwnerUniqueId((IArmorStandEntityDataSaver) armorStand, player.getUuidAsString());
         GraveData.setInventory((IArmorStandEntityDataSaver) armorStand, player.getInventory().writeNbt(new NbtList()));
 
-        NbtCompound playerData = new NbtCompound();
-        player.writeCustomDataToNbt(playerData);
         Optional<NbtCompound> equipmentData = playerData.getCompound("equipment");
         equipmentData.ifPresent(nbtCompound -> GraveData.setEquipment((IArmorStandEntityDataSaver) armorStand, nbtCompound));
         world.spawnEntity(armorStand);

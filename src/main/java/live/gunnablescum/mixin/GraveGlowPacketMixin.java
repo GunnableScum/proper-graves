@@ -1,6 +1,7 @@
 package live.gunnablescum.mixin;
 
-import live.gunnablescum.ProperGraves;
+import live.gunnablescum.configuration.ConfigurationHandler;
+import live.gunnablescum.configuration.enums.GlowingMode;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
@@ -46,7 +47,9 @@ public class GraveGlowPacketMixin {
                     List.of(DataTracker.SerializedEntry.of(Entity.FLAGS, (byte) 0x60))
             );
 
-            switch (ProperGraves.GLOWING_MODE) {
+            GlowingMode glowingMode = ConfigurationHandler.getGlowingMode();
+
+            switch (glowingMode) {
                 case DISABLED:
                     return;
                 case OWNER_ONLY:
