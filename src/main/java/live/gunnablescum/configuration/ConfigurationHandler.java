@@ -31,7 +31,7 @@ public class ConfigurationHandler {
     public static String getString(String key) {
         for (ConfigurationObject<?> section : config.sections) {
             if (section.values.get(key) instanceof String) {
-                return (String) section.values.get("glowmode");
+                return (String) section.values.get(key);
             }
         }
         ProperGraves.LOGGER.error("Key not found, returning NULL...");
