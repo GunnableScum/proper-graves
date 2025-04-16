@@ -1,6 +1,7 @@
 package live.gunnablescum.configuration;
 
 import live.gunnablescum.configuration.enums.GlowingMode;
+import live.gunnablescum.configuration.enums.PermissableAction;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
@@ -39,7 +40,7 @@ public class ConfigurationScreenHandler extends GenericContainerScreenHandler {
         ComponentChanges.Builder changes = ComponentChanges.builder();
         changes.add(DataComponentTypes.ITEM_NAME, Text.literal("Glowing").formatted(Formatting.GOLD));
         changes.add(DataComponentTypes.LORE, new LoreComponent(
-                getStatusLore(
+                getGlowingModeLore(
                         ConfigurationHandler.getGlowingMode(),
                         "Toggle this option to change the glowing of Graves."
                 )
@@ -50,7 +51,8 @@ public class ConfigurationScreenHandler extends GenericContainerScreenHandler {
         changes = ComponentChanges.builder();
         changes.add(DataComponentTypes.ITEM_NAME, Text.literal("Graverobbing").formatted(Formatting.GOLD));
         changes.add(DataComponentTypes.LORE, new LoreComponent(
-                getTBDLore(
+                getPermissableActionLore(
+                        ConfigurationHandler.getGraveRobbingMode(),
                         "Toggle this option to enable or disable",
                         "robbing the graves of other players."
                 )
@@ -62,7 +64,7 @@ public class ConfigurationScreenHandler extends GenericContainerScreenHandler {
         }
     }
 
-    private List<Text> getStatusLore(GlowingMode status, String... loreText) {
+    private List<Text> getGlowingModeLore(GlowingMode status, String... loreText) {
         List<Text> lore = new ArrayList<>();
         for(String str : loreText) {
             lore.add(Text.literal(str).formatted(Formatting.GRAY));
@@ -70,30 +72,27 @@ public class ConfigurationScreenHandler extends GenericContainerScreenHandler {
 
         lore.add(Text.literal("Status:").formatted(Formatting.GRAY));
 
-        MutableText enabled = Text.literal("Enabled").formatted(Formatting.GREEN);
-        enabled.fillStyle(enabled.getStyle().withUnderline(status == GlowingMode.ENABLED));
-        lore.add(enabled);
-
-        MutableText grave_owner_only = Text.literal("Owner Only").formatted(Formatting.YELLOW);
-        grave_owner_only.fillStyle(grave_owner_only.getStyle().withUnderline(status == GlowingMode.OWNER_ONLY));
-        lore.add(grave_owner_only);
-
-        MutableText disabled = Text.literal("Disabled").formatted(Formatting.RED);
-        disabled.fillStyle(disabled.getStyle().withUnderline(status == GlowingMode.DISABLED));
-        lore.add(disabled);
+        for(GlowingMode glowingMode : GlowingMode.values()) {
+            MutableText mode = Text.literal(glowingMode.getName()).formatted(glowingMode.getColor());
+            mode.fillStyle(mode.getStyle().withUnderline(status == glowingMode));
+            lore.add(mode);
+        }
 
         return lore;
     }
 
-    private List<Text> getTBDLore(String... loreText) {
+    private List<Text> getPermissableActionLore(PermissableAction status, String... loreText) {
         List<Text> lore = new ArrayList<>();
         for(String str : loreText) {
             lore.add(Text.literal(str).formatted(Formatting.GRAY));
         }
 
-        MutableText disabled = Text.literal("To be implemented!").formatted(Formatting.RED);
-        disabled.fillStyle(disabled.getStyle().withUnderline(true));
-        lore.add(disabled);
+        lore.add(Text.literal("Status:").formatted(Formatting.GRAY));
+        for(PermissableAction action : PermissableAction.values()) {
+            MutableText mode = Text.literal(action.getName()).formatted(action.getColor());
+            mode.fillStyle(mode.getStyle().withUnderline(status == action));
+            lore.add(mode);
+        }
 
         return lore;
     }
@@ -107,7 +106,7 @@ public class ConfigurationScreenHandler extends GenericContainerScreenHandler {
         }
 
         for(PlayerEntity operator : player.getServer().getPlayerManager().getPlayerList()) {
-            if(operator.getPermissionLevel() != 4) continue;
+            if(!operator.hasPermissionLevel(4)) continue;
             operator.sendMessage(
                     Text.literal("[")
                             .append(player.getDisplayName())
@@ -127,17 +126,16 @@ public class ConfigurationScreenHandler extends GenericContainerScreenHandler {
     @Override
     public void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
         // Edge case - Player gets deopped while in the config screen
-        if(player.getPermissionLevel() != 4) {
-            return;
-        }
+        if(!player.hasPermissionLevel(4)) return;
 
         switch (slotId) {
             case 11:
-                GlowingMode newMode = ConfigurationHandler.getGlowingMode() == GlowingMode.ENABLED ? GlowingMode.OWNER_ONLY : ConfigurationHandler.getGlowingMode() == GlowingMode.OWNER_ONLY ? GlowingMode.DISABLED : GlowingMode.ENABLED;
-                ConfigurationHandler.setGlowingMode(newMode);
+                GlowingMode newGlowMode = ConfigurationHandler.getGlowingMode() == GlowingMode.ENABLED ? GlowingMode.OWNER_ONLY : ConfigurationHandler.getGlowingMode() == GlowingMode.OWNER_ONLY ? GlowingMode.DISABLED : GlowingMode.ENABLED;
+                ConfigurationHandler.setGlowingMode(newGlowMode);
                 break;
             case 15:
-                player.sendMessage(Text.literal("Not available yet!").fillStyle(Style.EMPTY.withFormatting(Formatting.RED)), false);
+                PermissableAction newPermissableMode = ConfigurationHandler.getGraveRobbingMode() == PermissableAction.ALLOW ? PermissableAction.SERVER_OPERATOR_ONLY : ConfigurationHandler.getGraveRobbingMode() == PermissableAction.SERVER_OPERATOR_ONLY ? PermissableAction.DENY : PermissableAction.ALLOW;
+                ConfigurationHandler.setGraveRobbingMode(newPermissableMode);
                 break;
         }
         updateInventory();
