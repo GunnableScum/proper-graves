@@ -40,6 +40,7 @@ public class GraveGlowPacketMixin {
             IArmorStandEntityDataSaver graveData = (IArmorStandEntityDataSaver) armorStand;
             NbtCompound persistentData = graveData.getPersistentData();
             ServerPlayerEntity player = serverPlayNetworkHandler.getPlayer();
+            if(!persistentData.contains("OwnerUUID")) return;
 
             // Prepare a glow packet
             EntityTrackerUpdateS2CPacket glowingPacket = new EntityTrackerUpdateS2CPacket(
