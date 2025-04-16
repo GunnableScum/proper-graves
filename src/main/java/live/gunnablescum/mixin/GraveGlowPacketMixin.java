@@ -1,7 +1,7 @@
 package live.gunnablescum.mixin;
 
 import live.gunnablescum.configuration.ConfigurationHandler;
-import live.gunnablescum.configuration.enums.GlowingMode;
+import live.gunnablescum.configuration.configdatatypes.GlowingMode;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
@@ -40,6 +40,7 @@ public class GraveGlowPacketMixin {
             IArmorStandEntityDataSaver graveData = (IArmorStandEntityDataSaver) armorStand;
             NbtCompound persistentData = graveData.getPersistentData();
             ServerPlayerEntity player = serverPlayNetworkHandler.getPlayer();
+            if(!persistentData.contains("OwnerUUID")) return;
 
             // Prepare a glow packet
             EntityTrackerUpdateS2CPacket glowingPacket = new EntityTrackerUpdateS2CPacket(
