@@ -1,4 +1,4 @@
-package live.gunnablescum.configuration.enums;
+package live.gunnablescum.configuration.configdatatypes;
 
 import net.minecraft.util.Formatting;
 

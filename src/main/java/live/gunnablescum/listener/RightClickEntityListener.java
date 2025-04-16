@@ -1,7 +1,7 @@
 package live.gunnablescum.listener;
 
 import live.gunnablescum.configuration.ConfigurationHandler;
-import live.gunnablescum.configuration.enums.PermissableAction;
+import live.gunnablescum.configuration.configdatatypes.PermissableAction;
 import live.gunnablescum.data.GraveData;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;

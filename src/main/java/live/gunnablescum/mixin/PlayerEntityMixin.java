@@ -1,19 +1,14 @@
 package live.gunnablescum.mixin;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
+import live.gunnablescum.configuration.ConfigurationHandler;
+import live.gunnablescum.configuration.configdatatypes.ArmorStandDesign;
 import live.gunnablescum.data.GraveData;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
@@ -29,9 +24,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
@@ -63,7 +57,6 @@ public class PlayerEntityMixin {
         // Feature-Implementation for issue #1, Check GraveGlowPacketMixin.java.
         armorStand.setGlowing(false);
 
-
         armorStand.setNoGravity(true);
         armorStand.setShowArms(true);
         armorStand.setInvisible(true);
@@ -71,22 +64,16 @@ public class PlayerEntityMixin {
         armorStand.setCustomName(createGraveText(player.getName().getLiteralString()));
         armorStand.setCustomNameVisible(true);
         armorStand.setHideBasePlate(true);
-        armorStand.setLeftArmRotation(new EulerAngle(311.0f, 37.0f, 0.0f));
-        armorStand.setRightArmRotation(new EulerAngle(336.0f, 323.0f, 0.0f));
-        armorStand.setHeadRotation(new EulerAngle(37.0f, 0.0f, 0.0f));
+
+        ArmorStandDesign armorStandDesign = ConfigurationHandler.getArmorStandDesign().deserialize();
+        applyPose(armorStand, armorStandDesign.getPose());
 
         NbtCompound data = new NbtCompound();
         armorStand.writeCustomDataToNbt(data);
         data.put("DisabledSlots", NbtInt.of(4144959));
         armorStand.readCustomDataFromNbt(data);
 
-        ItemStack[] equipment = getGraveEquipment();
-
-        armorStand.equipStack(EquipmentSlot.HEAD, equipment[0]);
-        armorStand.equipStack(EquipmentSlot.CHEST, equipment[1]);
-        armorStand.equipStack(EquipmentSlot.LEGS, equipment[2]);
-        armorStand.equipStack(EquipmentSlot.FEET, equipment[3]);
-        armorStand.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.NETHERITE_HOE));
+        applyEquipment(armorStand, armorStandDesign.getEquipment());
 
         GraveData.setOwnerUniqueId((IArmorStandEntityDataSaver) armorStand, player.getUuidAsString());
         GraveData.setInventory((IArmorStandEntityDataSaver) armorStand, player.getInventory().writeNbt(new NbtList()));
@@ -98,37 +85,42 @@ public class PlayerEntityMixin {
     }
 
     @Unique
+    private void applyEquipment(ArmorStandEntity armorStand, Map<String, ItemStack> equipment) {
+        for(Map.Entry<String, ItemStack> entry : equipment.entrySet()) {
+            String part = entry.getKey();
+            ItemStack itemStack = entry.getValue();
+
+            switch (part) {
+                case "head" -> armorStand.equipStack(EquipmentSlot.HEAD, itemStack);
+                case "chestplate" -> armorStand.equipStack(EquipmentSlot.CHEST, itemStack);
+                case "leggings" -> armorStand.equipStack(EquipmentSlot.LEGS, itemStack);
+                case "boots" -> armorStand.equipStack(EquipmentSlot.FEET, itemStack);
+                case "mainHand" -> armorStand.equipStack(EquipmentSlot.MAINHAND, itemStack);
+            }
+        }
+    }
+
+    @Unique
+    private void applyPose(ArmorStandEntity armorStand, Map<String, EulerAngle> pose) {
+        for(Map.Entry<String, EulerAngle> entry : pose.entrySet()) {
+            String part = entry.getKey();
+            EulerAngle angle = entry.getValue();
+
+            switch (part) {
+                case "head" -> armorStand.setHeadRotation(angle);
+                case "body" -> armorStand.setBodyRotation(angle);
+                case "leftArm" -> armorStand.setLeftArmRotation(angle);
+                case "rightArm" -> armorStand.setRightArmRotation(angle);
+                case "leftLeg" -> armorStand.setLeftLegRotation(angle);
+                case "rightLeg" -> armorStand.setRightLegRotation(angle);
+            }
+        }
+    }
+
+    @Unique
     private MutableText createGraveText(String playerName) {
         MutableText text = Text.literal(playerName + "'s Grave");
         text.fillStyle(text.getStyle().withBold(true).withItalic(true).withFormatting(Formatting.DARK_RED));
         return text;
     }
-
-    @Unique
-    private ItemStack[] getGraveEquipment() {
-        ItemStack[] armor = new ItemStack[3];
-        armor[0] = new ItemStack(Items.LEATHER_CHESTPLATE);
-        armor[1] = new ItemStack(Items.LEATHER_LEGGINGS);
-        armor[2] = new ItemStack(Items.LEATHER_BOOTS);
-        for(ItemStack itemStack : armor) {
-            if(itemStack == null) continue;
-            ComponentChanges.Builder componentChanges = ComponentChanges.builder();
-            componentChanges.add(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0x000000));
-            itemStack.applyChanges(componentChanges.build());
-        }
-        ItemStack headItem = new ItemStack(Items.PLAYER_HEAD);
-        ComponentChanges.Builder componentChanges = ComponentChanges.builder();
-        componentChanges.add(DataComponentTypes.PROFILE, GetDeathHeadProfile());
-        headItem.applyChanges(componentChanges.build());
-        return new ItemStack[] {headItem, armor[0], armor[1], armor[2]};
-    }
-
-    @Unique
-    private ProfileComponent GetDeathHeadProfile() {
-        GameProfile profile = new GameProfile(UUID.randomUUID(), "Death");
-        byte[] encoded = ("{\"textures\":{\"SKIN\":{\"url\":\"" + "http://textures.minecraft.net/texture/32aace22fc9aa11307bcdb5bbc4b6c15e1fe2d2e81ce7e0c81fd9c6b15448f79" + "\"}}}").getBytes();
-        profile.getProperties().put("textures", new Property("textures", Base64.getEncoder().encodeToString(encoded)));
-        return new ProfileComponent(profile);
-    }
-
 }

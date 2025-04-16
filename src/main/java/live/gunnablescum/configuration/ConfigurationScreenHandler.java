@@ -1,7 +1,7 @@
 package live.gunnablescum.configuration;
 
-import live.gunnablescum.configuration.enums.GlowingMode;
-import live.gunnablescum.configuration.enums.PermissableAction;
+import live.gunnablescum.configuration.configdatatypes.GlowingMode;
+import live.gunnablescum.configuration.configdatatypes.PermissableAction;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;

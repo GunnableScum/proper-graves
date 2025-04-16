@@ -1,7 +1,7 @@
 package live.gunnablescum.mixin;
 
 import live.gunnablescum.configuration.ConfigurationHandler;
-import live.gunnablescum.configuration.enums.GlowingMode;
+import live.gunnablescum.configuration.configdatatypes.GlowingMode;
 import live.gunnablescum.dataoverride.IArmorStandEntityDataSaver;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
